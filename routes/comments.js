@@ -60,7 +60,7 @@ router.post("/", auth, async (req, res) => {
 });
 
 //게시글 수정
-router.put("/:postId", auth, async (req, res) => {
+router.put("/:commentId", auth, async (req, res) => {
   const {commentId } = req.params;
   const userNickname = res.locals.user.nickName;
   const {content} = req.body;
@@ -112,6 +112,6 @@ router.delete("/:commentId", auth, async (req, res) => {
 });
 
 
-module.exports = router;
+
 
 module.exports = router;
