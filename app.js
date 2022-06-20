@@ -3,7 +3,7 @@ const connect = require("./schemas/index");
 const cors = require("cors");
 const app = express();
 const usersRouter = require("./routes/users");
-const postsRouter = require("./routes/posts");
+const moviesRouter = require("./routes/movies");
 const commentsRouter = require("./routes/comments");
 const port = 5000;
 require("dotenv").config()
@@ -20,7 +20,7 @@ app.use(express.static("static"));
 app.use(express.json()); // json형태의 데이터를 parsing하여 사용할 수 있게 만듦.
 app.use(express.urlencoded({extended:false}));
 app.use("/users", [usersRouter]);
-app.use("/posts", [postsRouter]);
+app.use("/movies", [moviesRouter]);
 app.use("/comments", [commentsRouter]);
 
 app.listen(port, () => {
