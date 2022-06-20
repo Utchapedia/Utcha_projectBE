@@ -3,23 +3,17 @@ const {Schema} = mongoose;
 
 const commentSchema = new Schema 
     ({
-      User:{
-        type: String,
-        required:true,
-      },
       userId: {
         type: String,
-        required: true,
+        
     },
-      postId:{
+      movieId:{
         type: String,
         required: true,
-        trim: true,
       },
       commentId: {
         type: String,
         required: true,
-        trim: true,
       },
       
       comment: {
@@ -37,10 +31,13 @@ const commentSchema = new Schema
         required: true,
         trim: true,
       },
-      likes:{
+      countLikes: {
         type: Number,
-        default: 0,
-      },
+    },
+     commentStar: {
+      type: Number,
+  },
+     
     },
     {
       timestamps: true,

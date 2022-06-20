@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../middlewares/auth-middleware");
+
 const Post = require("../schemas/post");
 const Movie = require("../schemas/movie")
 // const aws = require("aws-sdk");
@@ -76,4 +77,5 @@ router.get('/:movieId', async(req, res) => {
         }
     }
 })
+
 module.exports = router;
