@@ -3,7 +3,7 @@ const router = express.Router();
 const auth = require("../middlewares/auth-middleware");
 const Counters = require("../schemas/counter");
 const Comments = require("../schemas/comment");
-
+const User = require("../schemas/user");
 
 // <---댓글 작성 API-->
 // 댓글은 '어디에 달린 댓글인지' 즉 원글이 중요하기 때문에 postId를 함께 DB에 저장합니다.
@@ -92,6 +92,59 @@ router.put('/:commentId', auth, async (req, res) => {
   res.json({ message: '댓글을 수정했습니다.' });
 });
 
+
+// <---좋아요 API-->
+router.post("/like/:commentId", auth, async (req, res) => {
+    // 변수 UserLikesArray에, 해당 유저가 지금까지 좋아요 한 글들의 commentId를 모아놓은 [배열] user.likes를 user DB에서 가져와 할당한다.
+    const { user } = res.locals;
+    let UserLikesArray = user.likes;
+  
+    // 변수 commentLikes에, 지금 좋아요 또는 좋아요 해제 하려는 글에 지금까지 좋아요 갯수가 몇 개인지 불러온다.
+    const { commentId } = req.params;
+    const comment = await Comments.findOne({ commentId: commentId }); 
+    let commentLikes = comment["likes"];
+  
+    // 좋아요 해제를 실행한다! UserLikesArray에 이미 좋아요 하려는 글의 commentId가 포함되어 있다면.
+    // 1) UserLikesArray에서 현재 글의 commentId를 제거해주고 2)현재 글의 likes 숫자를 하나 줄여준다.
+    if (UserLikesArray.includes(commentId)) {
+      const likes = UserLikesArray.filter((item) => item !== commentId);
+      await User.updateOne({ userId: user.userId }, { $set: { likes } });
+  
+      commentLikes--;
+      await Comments.updateOne({ commentId }, { $set: { likes: commentLikes } });
+  
+      res.status(200).json({ message: "좋아요 취소" });
+  
+  
+  
+    // 좋아요를 실행한다! UserLikesArray에 아직 좋아요 하려는 글의 commentId가 없다면.
+    // 1) UserLikesArray에서 현재 글의 commentId를 추가해주고 2)현재 글의 likes 숫자를 하나 더해준다.
+  
+    } else {
+      UserLikesArray.push(commentId);
+      await User.updateOne(
+        { userId: user.userId },
+        { $set: { likes: UserLikesArray } }
+      );
+  
+      commentLikes++;
+      awaitComments.updateOne({ commentId }, { $set: { likes: commentLikes } });
+      res.status(200).json({ message: "좋아요" });
+    }
+  });
+  
+  
+  // <---좋아요 개수 API-->
+  // 특정 글에 대한 좋아요가 몇 개인지만 보여주는 API
+  router.get("/like/:commentId", async (req, res) => {
+    const { commentId } = req.params;
+    const comment = awaitComments.findOne({ commentId: Number(commentId) });
+    const likes = comment["likes"];
+  
+    res.json({
+      likes,
+    });
+  });
 
 
 
