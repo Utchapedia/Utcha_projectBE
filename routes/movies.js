@@ -1,10 +1,8 @@
 const express = require("express");
 const router = express.Router();
-<<<<<<< Updated upstream
+const Movie = require("../schemas/movie")
 const auth = require("../middlewares/auth-middleware");
 const Post = require("../schemas/post");
-=======
->>>>>>> Stashed changes
 const Movie = require("../schemas/movie")
 const User = require('../schemas/user')
 const Star = require('../schemas/star')
@@ -58,8 +56,6 @@ router.get('/:movieId', async(req, res) => {
         }
     }
 })
-<<<<<<< Updated upstream
-=======
 
 // 개인 별점 조회
 router.get('/:movieId/stars/mystar', authMiddleware, async (req, res) => {
@@ -130,9 +126,7 @@ router.get('/:movieId/stars', async (req, res) => {
   for (let i = 1; i <= 5; i++) {
       countsPerStars.push(stars.filter((x) => x === i).length)
   }
-
   res.json({ averageStar, numRatings, countsPerStars })
 })
 
->>>>>>> Stashed changes
 module.exports = router;

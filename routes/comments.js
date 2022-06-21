@@ -4,14 +4,18 @@ const auth = require("../middlewares/auth-middleware");
 const Counters = require("../schemas/counter");
 const Comments = require("../schemas/comment");
 const User = require("../schemas/user");
+const Like = require('../schemas/like')
 
-// <---댓글 작성 API-->
-// 댓글은 '어디에 달린 댓글인지' 즉 원글이 중요하기 때문에 postId를 함께 DB에 저장합니다.
-router.post('/:postId', auth, async (req, res) => {
-  const { postId } = req.params;
+
+
+// 댓글 작성 API
+// 댓글은 '어디에 달린 댓글인지' 즉 원글이 중요하기 때문에 movieId를 함께 DB에 저장합니다.
+router.post('/:movieId', auth, async (req, res) => {
+  const { movieId} = req.params;
   const nickName = res.locals.user.nickName;    
   const { comment } = req.body;    
   const createdAt = new Date();
+  let countLikes =0;
 
   if (!comment) {
       return res.status(400).json({            
@@ -29,25 +33,26 @@ router.post('/:postId', auth, async (req, res) => {
 
   const writtenComment = await Comments.create({
       commentId,
-      postId,
+      movieId,
       comment,
       nickName,
       createdAt,
+      countLikes
   });
 
   res.json({ writtenComment,  message: '댓글을 작성했습니다.' });
 });
 
 
-// <---댓글 조회 API-->
-router.get("/:postId", async (req, res) => { 
+// 댓글 조회 API
+router.get("/:movieId", async (req, res) => { 
   //원하는 commentId가 포함된 내용을 찾아온다. 
-  const { postId } = req.params; const comment = 
-  await Comments.find({postId: postId });
+  const { movieId } = req.params; const comment = 
+  await Comments.find({movieId: movieId });
   res.json({ comment : comment }); });
 
 
-// <---댓글 삭제 API-->
+// 댓글 삭제 API
 router.delete('/:commentId', auth, async (req, res) => {
   const { commentId } = req.params;
   const comment = await Comments.findOne({ commentId: commentId });
@@ -65,7 +70,7 @@ router.delete('/:commentId', auth, async (req, res) => {
 });
 
 
-// <---댓글 수정 API-->
+// 댓글 수정 API
 router.put('/:commentId', auth, async (req, res) => {
   const { commentId } = req.params;
   const original_comment = await Comments.findOne({ commentId: commentId });
@@ -93,44 +98,66 @@ router.put('/:commentId', auth, async (req, res) => {
 });
 
 
-// <---좋아요 API-->
-router.post("/like/:commentId", auth, async (req, res) => {
-    // 변수 UserLikesArray에, 해당 유저가 지금까지 좋아요 한 글들의 commentId를 모아놓은 [배열] user.likes를 user DB에서 가져와 할당한다.
-    const { user } = res.locals;
-    let UserLikesArray = user.likes;
-  
-    // 변수 commentLikes에, 지금 좋아요 또는 좋아요 해제 하려는 글에 지금까지 좋아요 갯수가 몇 개인지 불러온다.
-    const { commentId } = req.params;
-    const comment = await Comments.findOne({ commentId: commentId }); 
-    let commentLikes = comment["likes"];
-  
-    // 좋아요 해제를 실행한다! UserLikesArray에 이미 좋아요 하려는 글의 commentId가 포함되어 있다면.
-    // 1) UserLikesArray에서 현재 글의 commentId를 제거해주고 2)현재 글의 likes 숫자를 하나 줄여준다.
-    if (UserLikesArray.includes(commentId)) {
-      const likes = UserLikesArray.filter((item) => item !== commentId);
-      await User.updateOne({ userId: user.userId }, { $set: { likes } });
-  
-      commentLikes--;
-      await Comments.updateOne({ commentId }, { $set: { likes: commentLikes } });
-  
-      res.status(200).json({ message: "좋아요 취소" });
-  
-  
-  
-    // 좋아요를 실행한다! UserLikesArray에 아직 좋아요 하려는 글의 commentId가 없다면.
-    // 1) UserLikesArray에서 현재 글의 commentId를 추가해주고 2)현재 글의 likes 숫자를 하나 더해준다.
-  
+// 좋아요 추가 기능
+router.post('/likes/:commentId', auth, async (req, res) => {
+    const { userId } = res.locals.user
+    const { commentId } = req.params
+    console.log("유저아이디입니다",userId)
+    const isLike = await Like.findOne({ userId:userId,commentId})
+    console.log("이즈라이크입니다",isLike)
+    if (isLike) {
+        return res
+            .status(400)
+            .json({ errorMessage: '이미 좋아요 되어있는 상태입니다.' })
     } else {
-      UserLikesArray.push(commentId);
-      await User.updateOne(
-        { userId: user.userId },
-        { $set: { likes: UserLikesArray } }
-      );
-  
-      commentLikes++;
-      awaitComments.updateOne({ commentId }, { $set: { likes: commentLikes } });
-      res.status(200).json({ message: "좋아요" });
+        
+        const like = await Like.create({userId,commentId })
+        console.log("라이크입니다",like)
+        const existLikes = await Comments.findOne({commentId:commentId})
+        console.log("존재하는라이크입니다",existLikes)
+        if (existLikes) {
+            const countLikes = existLikes.countLikes + 1
+            await Comments.updateOne(
+                { commentId: commentId },
+                { $set: { countLikes } }
+            )
+        }
     }
+    res.status(201).json({ message: '좋아요 추가 되었습니다.' })
+})
+
+// 좋아요 제거 기능
+router.delete('/likes/:commentId',auth,
+    async (req, res) => {
+        const { userId } = res.locals.user
+        const { commentId } = req.params
+        const isLike = await Like.findOne({ commentId, userId })
+        if (!isLike) {
+            return res
+                .status(400)
+                .json({ errorMessage: '이미 좋아요 되어있지 않은 상태입니다.' })
+        } else {
+            await Like.deleteOne({ userId, commentId })
+            const existLikes = await Comments.findOne({ commentId: commentId })
+            if (existLikes) {
+                const countLikes = existLikes.countLikes - 1
+                await Comments.updateOne(
+                    { commentId: commentId },
+                    { $set: { countLikes } }
+                )
+            }
+        }
+        res.status(201).json({ message: '좋아요 취소 되었습니다.' })
+    }
+)
+
+router.get('/likes/:commentId', async (req, res) => {
+    const { commentId } = req.params
+    const existLikeUsers = await Like.find({ commentId })
+    const likeUsers = existLikeUsers.map((item) => item.userId)
+    res.json({ likeUsers })
+})
+=======
   });
   
   
@@ -145,10 +172,4 @@ router.post("/like/:commentId", auth, async (req, res) => {
       likes,
     });
   });
-<<<<<<< Updated upstream
-
-
-=======
->>>>>>> Stashed changes
-
 module.exports = router;

@@ -21,13 +21,13 @@ const UserSchema = new mongoose.Schema({
 
 const postUsersSchema = Joi.object({
   userId: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }).required(),
-  nickName: Joi.string().pattern(new RegExp(/^[ㄱ-ㅎ|가-힣|a-z|A-Z|0-9|]+$/)).required(),
-  password: Joi.string().pattern(new RegExp(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{4,20}$/)).required(),
+  nickName: Joi.string().pattern(new RegExp("^[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]{3,20}$")).required(),
+  password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]{4,20}$")).required(),
 });
 // 비밀번호 영문숫자특수문자 포함 4~20자
 const postLoginSchema = Joi.object({
   userId: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }).required(),
-  password: Joi.string().pattern(new RegExp(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{4,20}$/)).required(),
+  password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]{4,20}$")).required(),
 });
 
 module.exports = {
