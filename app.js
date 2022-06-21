@@ -21,7 +21,13 @@ app.use(cors({
 connect();
 
 app.use(morganMiddleware);
-app.use(helmet());
+app.use(
+  helmet({ contentSecurityPolicy: false,
+          crossOriginEmbedderPolicy: false,
+          crossOriginResourcePolicy: false,
+          dnsPrefetchControl: false
+        }),
+);
 app.use(express.static("static"));
 app.use(express.json()); // json형태의 데이터를 parsing하여 사용할 수 있게 만듦.
 app.use(express.urlencoded({extended:false}));
@@ -32,3 +38,5 @@ app.use("/comments", [commentsRouter]);
 app.listen(port, () => {
     console.log(port, "포트로 서버가 켜졌습니다.");
   });
+
+
