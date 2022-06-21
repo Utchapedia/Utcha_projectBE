@@ -145,7 +145,10 @@ router.post("/like/:commentId", auth, async (req, res) => {
       likes,
     });
   });
+<<<<<<< Updated upstream
 
 
+=======
+>>>>>>> Stashed changes
 
 module.exports = router;
