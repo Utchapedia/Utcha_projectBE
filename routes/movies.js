@@ -2,11 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Movie = require("../schemas/movie")
 const auth = require("../middlewares/auth-middleware");
-const Post = require("../schemas/post");
-const Movie = require("../schemas/movie")
-const User = require('../schemas/user')
 const Star = require('../schemas/star')
-const authMiddleware = require('../middlewares/auth-middleware')
+
+
 
 router.post("/",async (req, res) => {
     try {
@@ -31,6 +29,7 @@ router.post("/",async (req, res) => {
       res.status(500).json()
     }
   });
+
 
 router.get('/', async(req, res) => {
     try{
@@ -59,7 +58,6 @@ router.get('/:movieId', async(req, res) => {
 
 // 개인 별점 조회
 router.get('/:movieId/stars/mystar', authMiddleware, async (req, res) => {
-  res.json({ myStar })
   try {
     const { movieId } = req.params
     const { userId } = res.locals.user
@@ -106,7 +104,19 @@ router.post('/:movieId/stars', authMiddleware, async (req, res) => {
 }
 })
 
+    await star.save()
+
+    res.status(200).json({msg:"별점 추가 성공"})
+} catch(err) {
+    console.log(err)
+    if(err) {
+        res.status(500).json({ msg: "별점 추가 실패." })
+    }
+}
+})
+
 // 별점 삭제
+
 router.delete('/:movieId/stars', authMiddleware, async (req, res) => {
 
   try {

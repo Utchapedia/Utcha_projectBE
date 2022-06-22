@@ -33,10 +33,11 @@ const commentSchema = new Schema
       },
       countLikes: {
         type: Number,
-    },
-     commentStar: {
-      type: Number,
-  },
+      },
+      commentStar: {
+        type: Number,
+      },
+  
      
     },
     {

@@ -3,8 +3,7 @@ const router = express.Router();
 const auth = require("../middlewares/auth-middleware");
 const Counters = require("../schemas/counter");
 const Comments = require("../schemas/comment");
-const User = require("../schemas/user");
-const Like = require('../schemas/like')
+const Like = require("../schemas/like")
 
 
 // 댓글 작성 API
@@ -47,8 +46,9 @@ router.post('/:movieId', auth, async (req, res) => {
 router.get("/:movieId", async (req, res) => { 
   //원하는 commentId가 포함된 내용을 찾아온다. 
   const { movieId } = req.params; const comment = 
-  await Comments.find({movieId: movieId });
-  res.json({ comment : comment }); });
+  await Comments.find({movieId: movieId }).sort({createdAt:-1});
+  res.json({ comment : comment }); 
+});
 
 // 댓글 삭제 API
 router.delete('/:commentId', auth, async (req, res) => {
@@ -100,19 +100,14 @@ router.put('/:commentId', auth, async (req, res) => {
 router.post('/likes/:commentId', auth, async (req, res) => {
     const { userId } = res.locals.user
     const { commentId } = req.params
-    console.log("유저아이디입니다",userId)
     const isLike = await Like.findOne({ userId:userId,commentId})
-    console.log("이즈라이크입니다",isLike)
     if (isLike) {
         return res
             .status(400)
             .json({ errorMessage: '이미 좋아요 되어있는 상태입니다.' })
     } else {
-        
-        const like = await Like.create({userId,commentId })
-        console.log("라이크입니다",like)
+        await Like.create({userId,commentId })
         const existLikes = await Comments.findOne({commentId:commentId})
-        console.log("존재하는라이크입니다",existLikes)
         if (existLikes) {
             const countLikes = existLikes.countLikes + 1
             await Comments.updateOne(
@@ -156,16 +151,4 @@ router.get('/likes/:commentId', async (req, res) => {
     res.json({ likeUsers })
 })
 
-  
-  // <---좋아요 개수 API-->
-  // 특정 글에 대한 좋아요가 몇 개인지만 보여주는 API
-  router.get("/like/:commentId", async (req, res) => {
-    const { commentId } = req.params;
-    const comment = awaitComments.findOne({ commentId: Number(commentId) });
-    const likes = comment["likes"];
-  
-    res.json({
-      likes,
-    });
-  });
 module.exports = router;
