@@ -100,7 +100,7 @@ const number = generateRandom(111111, 999999)
     from: process.env.MAILS_EMAIL,    // 발송 메일 주소 (위에서 작성한 gmail 계정 아이디)
     to: email ,                     // 수신 메일 주소
     subject: "[읏챠 피디아] 인증번호가 도착했습니다.",   // 제목
-    html: `<img src="https://imgur.com/x7MhYHZ" />`+
+    html: 
         "<h2>읏챠 피디아 인증 번호입니다</h2>"+ 
         "아래의 인증번호를 입력하여 주세요<br>"+
          number, //내용
