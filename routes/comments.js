@@ -28,7 +28,8 @@ router.get("/", async (req, res) => {
 // 댓글은 '어디에 달린 댓글인지' 즉 원글이 중요하기 때문에 movieId를 함께 DB에 저장합니다.
 router.post('/:movieId', auth, async (req, res) => {
   const { movieId} = req.params;
-  const nickName = res.locals.user.nickName;    
+  const { nickName } = res.locals.user
+  console.log(nickName);
   const { comment } = req.body;    
   const createdAt = new Date();
   let countLikes =0;
