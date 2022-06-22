@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const auth = require("../middlewares/auth-middleware");
 
-const Post = require("../schemas/post");
 const Movie = require("../schemas/movie")
 // const aws = require("aws-sdk");
 // const multer = require("multer");
@@ -27,6 +26,24 @@ const Movie = require("../schemas/movie")
 //   },
 // });
 
+
+// 검색 ( 카테고리, title 기준 )
+router.get("/category", async (req, res) => {
+  const keyword = req.query.search.replace(/\s/gi, "");
+  const postings = await Movie.find(
+      {
+          $or: [
+              { category: new RegExp(keyword) },
+              { title: new RegExp(keyword) },
+          ],
+      },
+      { donator: 0, creatorImg: 0 }
+  );
+  res.json({
+      result: true,
+      matchedProjects: postings,
+  });
+});
 
 router.post("/",async (req, res) => {
     try {

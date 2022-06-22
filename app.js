@@ -5,7 +5,7 @@ const app = express();
 const usersRouter = require("./routes/users");
 const moviesRouter = require("./routes/movies");
 const commentsRouter = require("./routes/comments");
-const port = 5000;
+const port = 3000;
 require("dotenv").config()
 
 app.use(cors({
