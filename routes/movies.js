@@ -1,49 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../middlewares/auth-middleware");
-
 const Movie = require("../schemas/movie")
-// const aws = require("aws-sdk");
-// const multer = require("multer");
-// const multerS3 = require("multer-s3");
+const Star = require('../schemas/star')
 
-// const path = require("path");
-// aws.config.loadFromPath(__dirname + "/awsconfig.json"); // 사용자 인증 keyId, Secret KeyId
-// const s3 = new aws.S3();
-
-// const upload = multer({
-//   storage: multerS3({
-//     s3: s3, // 사용자 인증권한이 담긴다.
-//     bucket: "desklet", // 버킷이름
-//     acl: "public-read-write", // 액세스 제어 목록( Access control for the file)
-//     key: function (req, file, cb) {
-//       const url = path.extname(file.originalname);
-//       cb(null, Date.now() + url);
-//     },
-//   }),
-//   limits: {
-//     fileSize: 1000 * 1000 * 10,
-//   },
-// });
-
-
-// 검색 ( 카테고리, title 기준 )
-router.get("/category", async (req, res) => {
-  const keyword = req.query.search.replace(/\s/gi, "");
-  const postings = await Movie.find(
-      {
-          $or: [
-              { category: new RegExp(keyword) },
-              { title: new RegExp(keyword) },
-          ],
-      },
-      { donator: 0, creatorImg: 0 }
-  );
-  res.json({
-      result: true,
-      matchedProjects: postings,
-  });
-});
 
 router.post("/",async (req, res) => {
     try {
@@ -94,5 +54,92 @@ router.get('/:movieId', async(req, res) => {
         }
     }
 })
+
+router.get('/:movieId', async(req, res) => {
+  try {
+      const { movieId } = req.params
+      const movieDetail = await Movie.findOne({movieId: movieId})
+      res.status(200).json({msg: "상세페이지를 불러옵니다.", movieDetail})
+  } catch(err) {
+      console.log(err)
+      if(err) {
+          res.status(500).json({ msg: "상세페이지를 불러오는데 실패했습니다." })
+      }
+  }
+})
+
+// 개인 별점 조회
+router.get('/:movieId/stars/mystar', auth, async (req, res) => {
+const { movieId } = req.params
+const { userId } = res.locals.user
+const existStar = await Star.findOne({ movieId, userId })
+let myStar = 0
+if (!existStar) {
+    myStar = 0
+} else {
+    myStar = existStar.stars
+}
+res.json({ myStar })
+})
+
+// 별점 추가
+router.post('/:movieId/stars', auth, async (req, res) => {
+const { movieId } = req.params
+const { stars } = req.body
+const { userId } = res.locals.user
+
+// 이미 별점이 존재하면 수정
+const existStar = await Star.findOne({ userId, movieId })
+if (existStar) {
+    existStar.stars = stars
+    await existStar.save()
+    return res.send()
+}
+
+const star = new Star({ userId, movieId, stars })
+await star.save()
+
+res.send()
+})
+
+// 별점 삭제
+router.delete('/:movieId/stars', auth, async (req, res) => {
+const { movieId } = req.params
+const { userId } = res.locals.user
+
+const existStar = await Star.findOne({ userId, movieId })
+if (!existStar) {
+    return res.status(400).send()
+}
+
+await Star.deleteOne({ movieId, userId })
+
+res.send()
+})
+
+// 별점 정보 조회
+router.get('/:movieId/stars', async (req, res) => {
+const { movieId } = req.params
+
+const allStars = await Star.find({ movieId })
+if (!allStars.length) {
+    const averageStar = 0
+    const numRatings = 0
+    const countsPerStars = [0, 0, 0, 0, 0]
+    return res.json({ averageStar, numRatings, countsPerStars })
+}
+
+const numRatings = allStars.length
+const stars = allStars.map((x) => x.stars)
+const averageStar = stars.reduce((a, b) => a + b) / numRatings
+
+const countsPerStars = []
+for (let i = 1; i <= 5; i++) {
+    countsPerStars.push(stars.filter((x) => x === i).length)
+}
+res.json({ averageStar, numRatings, countsPerStars })
+})
+
+
 
 module.exports = router;
