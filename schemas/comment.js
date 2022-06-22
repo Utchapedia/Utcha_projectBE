@@ -33,14 +33,11 @@ const commentSchema = new Schema
       },
       countLikes: {
         type: Number,
-    },
-     commentStar: {
-      type: Number,
-  },
-  role:{
-    type: String,
-    required: true,
-  }
+      },
+      commentStar: {
+        type: Number,
+      },
+  
      
     },
     {
@@ -48,5 +45,4 @@ const commentSchema = new Schema
     }
   );
   
-const Comment = mongoose.model('Comment', commentSchema);
-module.exports = Comment;
+module.exports = mongoose.model('Comments', commentSchema);

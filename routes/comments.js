@@ -4,25 +4,7 @@ const auth = require("../middlewares/auth-middleware");
 const Counters = require("../schemas/counter");
 const Comments = require("../schemas/comment");
 const Like = require("../schemas/like")
-const Movie = require("../schemas/movie");
 
-// 검색 ( 카테고리, title 기준 )
-router.get("/", async (req, res) => {
-    const keyword = req.query.search.replace(/\s/gi, "");
-    const postings = await Movie.find(
-        {
-            $or: [
-                { category: new RegExp(keyword) },
-                { title: new RegExp(keyword) },
-            ],
-        },
-        { donator: 0, creatorImg: 0 }
-    );
-    res.json({
-        result: true,
-        matchedProjects: postings,
-    });
-});
 
 // 댓글 작성 API
 // 댓글은 '어디에 달린 댓글인지' 즉 원글이 중요하기 때문에 movieId를 함께 DB에 저장합니다.
@@ -65,9 +47,9 @@ router.post('/:movieId', auth, async (req, res) => {
 router.get("/:movieId", async (req, res) => { 
   //원하는 commentId가 포함된 내용을 찾아온다. 
   const { movieId } = req.params; const comment = 
-  await Comments.find({movieId: movieId });
-  res.json({ comment : comment }); });
-
+  await Comments.find({movieId: movieId }).sort({createdAt:-1});
+  res.json({ comment : comment }); 
+});
 
 // 댓글 삭제 API
 router.delete('/:commentId', auth, async (req, res) => {
@@ -169,10 +151,9 @@ router.get('/likes/:commentId', async (req, res) => {
     const likeUsers = existLikeUsers.map((item) => item.userId)
     res.json({ likeUsers })
 })
-  
   // <---좋아요 개수 API-->
   // 특정 글에 대한 좋아요가 몇 개인지만 보여주는 API
-  router.get("/like/:commentId", async (req, res) => {
+router.get("/like/:commentId", async (req, res) => {
     const { commentId } = req.params;
     const comment = awaitComments.findOne({ commentId: Number(commentId) });
     const likes = comment["likes"];
@@ -180,5 +161,6 @@ router.get('/likes/:commentId', async (req, res) => {
     res.json({
       likes,
     });
-  });
+});
+
 module.exports = router;
