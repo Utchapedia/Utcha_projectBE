@@ -37,6 +37,10 @@ const commentSchema = new Schema
      commentStar: {
       type: Number,
   },
+  role:{
+    type: String,
+    required: true,
+  }
      
     },
     {
