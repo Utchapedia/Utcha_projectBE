@@ -60,7 +60,7 @@ const transports = [
   // error.log파일에 모든 수준의 메시지를 출력할 수 있게 한다.
   new winstonDaily({ // winston.trasports.winstonDaily가 아님
     level: 'info',
-    filename: '%DATE%.log',
+    filename: 'logs/info.log',
     datePattern: 'YYYY-MM-DD',
     maxFiles: '7',
     zippedArchive: true
@@ -68,17 +68,21 @@ const transports = [
   new winstonDaily({ //error 레벨 로그 
     level: 'error',
     maxFiles: '7', // 7일치 로그 저장
-    filename: `%DATE%.error.log`, //  %DATE% = 위에서 설정한 datePattern YYYY-MM-DD HH:mm:ss:ms
+    filename: `logs/error.log`, //  %DATE% = 위에서 설정한 datePattern YYYY-MM-DD HH:mm:ss:ms
     zippedArchive: true
   }),
   new winstonDaily({
     level: 'debug',
-    filename: '%DATE%.debug.log',
-    maxFiles: '7'
+    filename: 'logs/debug.log',
+    maxFiles: '7',
   }),
   // all.log파일에 모든 오류 메세지를 출력할 수 있게 한다.
   // 또한 error.log(오류로그) 내부에도 인쇄된다.
-  new winston.transports.File({ filename: 'logs/all.log' }),
+  new winstonDaily({
+    filename: 'logs/all.log',
+    level: levels,
+    maxFiles: '7'
+  }),
 ]
 
 // exports할 Logger 인스턴스를 생성한다.

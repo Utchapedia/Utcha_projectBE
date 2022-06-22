@@ -13,7 +13,7 @@ require("dotenv").config()
 global.Logger || (global.Logger = require('./config/Logger'));
 
 app.use(cors({
-    // exposedHeaders:["authorization"],
+    exposedHeaders:["authorization"],
     origin: '*', //출처 허용 옵션: 테스트용 - 전부허용!
     credentials: 'true', // 사용자 인증이 필요한 리소스(쿠키..등) 접근
   }));
