@@ -57,75 +57,116 @@ router.get('/:movieId', async(req, res) => {
 })
 
 // 개인 별점 조회
-router.get('/:movieId/stars/mystar', auth, async (req, res) => {
-  const { movieId } = req.params
-  const { userId } = res.locals.user
-  const existStar = await Star.findOne({ movieId, userId })
-  let myStar = 0
-  if (!existStar) {
-      myStar = 0
-  } else {
-      myStar = existStar.stars
-  }
-  res.json({ myStar })
+router.get('/:movieId/stars/mystar', authMiddleware, async (req, res) => {
+  try {
+    const { movieId } = req.params
+    const { userId } = res.locals.user
+    const existStar = await Star.findOne({ movieId, userId })
+    let myStar = 0
+    if (!existStar) {
+        myStar = 0
+    } else {
+        myStar = existStar.stars
+    }
+    res.status(200).json({msg:"개인 별점 조회 완료"})
+} catch(err) {
+    console.log(err)
+    if(err) {
+        res.status(500).json({ msg: "개인 별점 조회 실패." })
+    }
+}
+
 })
 
 // 별점 추가
-router.post('/:movieId/stars', auth, async (req, res) => {
-  const { movieId } = req.params
-  const { stars } = req.body
-  const { userId } = res.locals.user
+router.post('/:movieId/stars', authMiddleware, async (req, res) => {
+  try {
+    const { movieId } = req.params
+    const { stars } = req.body
+    const { userId } = res.locals.user
+    const existStar = await Star.findOne({ userId, movieId })
+    // 이미 별점이 존재하면 수정
+    if (existStar) {
+        existStar.stars = stars
+        await existStar.save()
+        return res.status(201).json({msg:"별점 수정"})
+    }
+    const star = new Star({ userId, movieId, stars })
 
-  // 이미 별점이 존재하면 수정
-  const existStar = await Star.findOne({ userId, movieId })
-  if (existStar) {
-      existStar.stars = stars
-      await existStar.save()
-      return res.send()
-  }
+    await star.save()
 
-  const star = new Star({ userId, movieId, stars })
-  await star.save()
+    res.status(200).json({msg:"별점 추가 성공"})
+} catch(err) {
+    console.log(err)
+    if(err) {
+        res.status(500).json({ msg: "별점 추가 실패." })
+    }
+}
+})
 
-  res.send()
+    await star.save()
+
+    res.status(200).json({msg:"별점 추가 성공"})
+} catch(err) {
+    console.log(err)
+    if(err) {
+        res.status(500).json({ msg: "별점 추가 실패." })
+    }
+}
 })
 
 // 별점 삭제
-router.delete('/:movieId/stars', auth, async (req, res) => {
-  const { movieId } = req.params
-  const { userId } = res.locals.user
 
-  const existStar = await Star.findOne({ userId, movieId })
-  if (!existStar) {
-      return res.status(400).send()
-  }
+router.delete('/:movieId/stars', authMiddleware, async (req, res) => {
 
-  await Star.deleteOne({ movieId, userId })
+  try {
+    const { movieId } = req.params
+    const { userId } = res.locals.user
+  
+    const existStar = await Star.findOne({ userId, movieId })
+    if (!existStar) {
+        return res.status(400).send()
+    }
+  
+    await Star.deleteOne({ movieId, userId })
 
-  res.send()
+    res.status(200).json({msg:"별점 삭제 성공"})
+} catch(err) {
+    console.log(err)
+    if(err) {
+        res.status(500).json({ msg: "별점 삭제 실패." })
+    }
+}
+  
 })
 
 // 별점 정보 조회
-router.get('/:movieId/stars', async (req, res) => {
-  const { movieId } = req.params
-
-  const allStars = await Star.find({ movieId })
-  if (!allStars.length) {
-      const averageStar = 0
-      const numRatings = 0
-      const countsPerStars = [0, 0, 0, 0, 0]
-      return res.json({ averageStar, numRatings, countsPerStars })
-  }
-
-  const numRatings = allStars.length
-  const stars = allStars.map((x) => x.stars)
-  const averageStar = stars.reduce((a, b) => a + b) / numRatings
-
-  const countsPerStars = []
-  for (let i = 1; i <= 5; i++) {
-      countsPerStars.push(stars.filter((x) => x === i).length)
-  }
-  res.json({ averageStar, numRatings, countsPerStars })
+router.get('/:movieId/stars', async (req, res) => {  
+  try {
+    const { movieId } = req.params
+    const allStars = await Star.find({ movieId })
+    if (!allStars.length) {
+        const averageStar = 0
+        const numRatings = 0
+        const countsPerStars = [0, 0, 0, 0, 0]
+        return res.status(201).json({ averageStar, numRatings, countsPerStars })
+    }
+  
+    const numRatings = allStars.length
+    const stars = allStars.map((x) => x.stars)
+    const averageStar = stars.reduce((a, b) => a + b) / numRatings
+  
+    const countsPerStars = []
+    for (let i = 1; i <= 5; i++) {
+        countsPerStars.push(stars.filter((x) => x === i).length)
+    }
+    res.status(200).json({ msg:"별점 정보 조회 성공",averageStar, numRatings, countsPerStars })
+} catch(err) {
+    console.log(err)
+    if(err) {
+        res.status(500).json({ msg: "별점 정보 조회 실패." })
+    }
+}
 })
 
 module.exports = router;
