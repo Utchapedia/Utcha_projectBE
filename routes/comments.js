@@ -3,10 +3,26 @@ const router = express.Router();
 const auth = require("../middlewares/auth-middleware");
 const Counters = require("../schemas/counter");
 const Comments = require("../schemas/comment");
-const User = require("../schemas/user");
-const Like = require('../schemas/like')
+const Like = require("../schemas/like")
+const Movie = require("../schemas/movie");
 
-
+// 검색 ( 카테고리, title 기준 )
+router.get("/", async (req, res) => {
+    const keyword = req.query.search.replace(/\s/gi, "");
+    const postings = await Movie.find(
+        {
+            $or: [
+                { category: new RegExp(keyword) },
+                { title: new RegExp(keyword) },
+            ],
+        },
+        { donator: 0, creatorImg: 0 }
+    );
+    res.json({
+        result: true,
+        matchedProjects: postings,
+    });
+});
 
 // 댓글 작성 API
 // 댓글은 '어디에 달린 댓글인지' 즉 원글이 중요하기 때문에 movieId를 함께 DB에 저장합니다.
@@ -102,19 +118,14 @@ router.put('/:commentId', auth, async (req, res) => {
 router.post('/likes/:commentId', auth, async (req, res) => {
     const { userId } = res.locals.user
     const { commentId } = req.params
-    console.log("유저아이디입니다",userId)
     const isLike = await Like.findOne({ userId:userId,commentId})
-    console.log("이즈라이크입니다",isLike)
     if (isLike) {
         return res
             .status(400)
             .json({ errorMessage: '이미 좋아요 되어있는 상태입니다.' })
     } else {
-        
-        const like = await Like.create({userId,commentId })
-        console.log("라이크입니다",like)
+        await Like.create({userId,commentId })
         const existLikes = await Comments.findOne({commentId:commentId})
-        console.log("존재하는라이크입니다",existLikes)
         if (existLikes) {
             const countLikes = existLikes.countLikes + 1
             await Comments.updateOne(
@@ -157,6 +168,19 @@ router.get('/likes/:commentId', async (req, res) => {
     const likeUsers = existLikeUsers.map((item) => item.userId)
     res.json({ likeUsers })
 })
-
-
+=======
+  });
+  
+  
+  // <---좋아요 개수 API-->
+  // 특정 글에 대한 좋아요가 몇 개인지만 보여주는 API
+  router.get("/like/:commentId", async (req, res) => {
+    const { commentId } = req.params;
+    const comment = awaitComments.findOne({ commentId: Number(commentId) });
+    const likes = comment["likes"];
+  
+    res.json({
+      likes,
+    });
+  });
 module.exports = router;
