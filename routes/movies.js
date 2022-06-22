@@ -2,11 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Movie = require("../schemas/movie")
 const auth = require("../middlewares/auth-middleware");
-const Post = require("../schemas/post");
-const Movie = require("../schemas/movie")
-const User = require('../schemas/user')
 const Star = require('../schemas/star')
-const authMiddleware = require('../middlewares/auth-middleware')
+
+
 
 router.post("/",async (req, res) => {
     try {
@@ -58,7 +56,7 @@ router.get('/:movieId', async(req, res) => {
 })
 
 // 개인 별점 조회
-router.get('/:movieId/stars/mystar', authMiddleware, async (req, res) => {
+router.get('/:movieId/stars/mystar', auth, async (req, res) => {
   const { movieId } = req.params
   const { userId } = res.locals.user
   const existStar = await Star.findOne({ movieId, userId })
@@ -72,7 +70,7 @@ router.get('/:movieId/stars/mystar', authMiddleware, async (req, res) => {
 })
 
 // 별점 추가
-router.post('/:movieId/stars', authMiddleware, async (req, res) => {
+router.post('/:movieId/stars', auth, async (req, res) => {
   const { movieId } = req.params
   const { stars } = req.body
   const { userId } = res.locals.user
@@ -92,7 +90,7 @@ router.post('/:movieId/stars', authMiddleware, async (req, res) => {
 })
 
 // 별점 삭제
-router.delete('/:movieId/stars', authMiddleware, async (req, res) => {
+router.delete('/:movieId/stars', auth, async (req, res) => {
   const { movieId } = req.params
   const { userId } = res.locals.user
 

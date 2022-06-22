@@ -16,6 +16,10 @@ const UserSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  token: {
+    type: String,
+    required: true,
+  },
   likes: [], 
 });
 
