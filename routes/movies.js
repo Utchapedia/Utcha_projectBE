@@ -57,7 +57,7 @@ router.get('/:movieId', async(req, res) => {
 })
 
 // 개인 별점 조회
-router.get('/:movieId/stars/mystar', authMiddleware, async (req, res) => {
+router.get('/:movieId/stars/mystar', auth, async (req, res) => {
   try {
     const { movieId } = req.params
     const { userId } = res.locals.user
@@ -79,7 +79,7 @@ router.get('/:movieId/stars/mystar', authMiddleware, async (req, res) => {
 })
 
 // 별점 추가
-router.post('/:movieId/stars', authMiddleware, async (req, res) => {
+router.post('/:movieId/stars', auth, async (req, res) => {
   try {
     const { movieId } = req.params
     const { stars } = req.body
@@ -104,20 +104,9 @@ router.post('/:movieId/stars', authMiddleware, async (req, res) => {
 }
 })
 
-    await star.save()
-
-    res.status(200).json({msg:"별점 추가 성공"})
-} catch(err) {
-    console.log(err)
-    if(err) {
-        res.status(500).json({ msg: "별점 추가 실패." })
-    }
-}
-})
-
 // 별점 삭제
 
-router.delete('/:movieId/stars', authMiddleware, async (req, res) => {
+router.delete('/:movieId/stars', auth, async (req, res) => {
 
   try {
     const { movieId } = req.params

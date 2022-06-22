@@ -10,7 +10,8 @@ const Like = require("../schemas/like")
 // 댓글은 '어디에 달린 댓글인지' 즉 원글이 중요하기 때문에 movieId를 함께 DB에 저장합니다.
 router.post('/:movieId', auth, async (req, res) => {
   const { movieId} = req.params;
-  const nickName = res.locals.user.nickName;    
+  const { nickName } = res.locals.user
+  console.log(nickName);
   const { comment } = req.body;    
   const createdAt = new Date();
   let countLikes =0;
@@ -150,5 +151,16 @@ router.get('/likes/:commentId', async (req, res) => {
     const likeUsers = existLikeUsers.map((item) => item.userId)
     res.json({ likeUsers })
 })
+  // <---좋아요 개수 API-->
+  // 특정 글에 대한 좋아요가 몇 개인지만 보여주는 API
+router.get("/like/:commentId", async (req, res) => {
+    const { commentId } = req.params;
+    const comment = awaitComments.findOne({ commentId: Number(commentId) });
+    const likes = comment["likes"];
+  
+    res.json({
+      likes,
+    });
+});
 
 module.exports = router;
