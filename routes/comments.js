@@ -168,6 +168,19 @@ router.get('/likes/:commentId', async (req, res) => {
     const likeUsers = existLikeUsers.map((item) => item.userId)
     res.json({ likeUsers })
 })
-
-
+=======
+  });
+  
+  
+  // <---좋아요 개수 API-->
+  // 특정 글에 대한 좋아요가 몇 개인지만 보여주는 API
+  router.get("/like/:commentId", async (req, res) => {
+    const { commentId } = req.params;
+    const comment = awaitComments.findOne({ commentId: Number(commentId) });
+    const likes = comment["likes"];
+  
+    res.json({
+      likes,
+    });
+  });
 module.exports = router;
